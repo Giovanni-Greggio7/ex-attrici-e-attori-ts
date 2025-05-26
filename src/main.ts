@@ -69,7 +69,27 @@ async function getActress(id: number): Promise<Actress | null> {
   }
 }
 
+async function getAllActress(): Promise<Actress | null> {
+
+  try {
+
+    const response = await fetch(`http://localhost:5001/actresses`)
+    if (!response.ok) {
+      throw new Error(`Errore HTTP ${response.status}: ${response.statusText}`)
+    }
+    const data = await response.json()
+    return data
+  } catch (errore) {
+
+    console.error(errore)
+    return null
+
+  }
+}
+
 (async () => {
+  const lista = await getAllActress()
   const risposta = await getActress(1)
+  console.log(lista)
   console.log(risposta)
 })()
