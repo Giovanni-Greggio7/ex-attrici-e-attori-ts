@@ -2,7 +2,7 @@ export type Person = {
   readonly id: number,
   readonly name: string,
   birth_year: number,
-  death_year: number,
+  death_year?: number,
   biography: string,
   image: string,
 }
@@ -29,13 +29,12 @@ export type Actress = Person & {
 }
 
 function isActress(dati: unknown): dati is Actress {
-  if (
-    dati &&
+  return (
     typeof dati === 'object' && dati !== null &&
     'id' in dati && typeof dati.id === 'number' &&
     'name' in dati && typeof dati.name === 'string' &&
     'birth_year' in dati && typeof dati.birth_year === 'number' &&
-    'death_year' in dati && typeof dati.death_year === 'number' &&
+    (!('death_year' in dati) || typeof dati.death_year === 'number') &&
     'biography' in dati && typeof dati.biography === 'string' &&
     'image' in dati && typeof dati.image === 'string' &&
     'most_famous_movies' in dati &&
@@ -45,25 +44,22 @@ function isActress(dati: unknown): dati is Actress {
     'awards' in dati && typeof dati.awards === 'string' &&
     'nationality' in dati && typeof dati.nationality === 'string' &&
     nazionalità.includes(dati.nationality)
-  ) {
-    return true
-  }
-  return false
+  ) 
 }
 
 async function getActress(id: number): Promise<Actress | null> {
-  
+
   try {
 
     const response = await fetch(`http://localhost:5001/actresses/${id}`)
     if (!response.ok) {
       throw new Error(`Errore HTTP ${response.status}: ${response.statusText}`)
     }
-    const data = await response.json()
-    if(isActress(data)){
-      return data
+    const data: unknown = await response.json()
+    if(!isActress(data)){
+      throw new Error('Formato dei dati non valido')
     }
-    throw new Error('Formato dei dati non valido')
+    return data
 
   } catch (errore) {
 
@@ -72,3 +68,8 @@ async function getActress(id: number): Promise<Actress | null> {
 
   }
 }
+
+(async () => {
+  const risposta = await getActress(1)
+  console.log(risposta)
+})()
