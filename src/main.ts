@@ -69,7 +69,7 @@ async function getActress(id: number): Promise<Actress | null> {
   }
 }
 
-async function getAllActress(): Promise<Actress | null> {
+async function getAllActress(): Promise<Actress[]> {
 
   try {
 
@@ -78,11 +78,32 @@ async function getAllActress(): Promise<Actress | null> {
       throw new Error(`Errore HTTP ${response.status}: ${response.statusText}`)
     }
     const data = await response.json()
-    return data
+    if(!(data instanceof Array)){
+      throw new Error('Formato dei dati non valido')
+    }
+    const attriciValide = data.filter(isActress)
+    return attriciValide
   } catch (errore) {
 
     console.error(errore)
-    return null
+    return []
+
+  }
+}
+
+async function getActresses(ids: number[]): Promise<(Actress | null)[]> {
+
+  try {
+
+    const response = ids.map(id => getActress(id)) 
+    const actresses = await Promise.all(response)
+    return actresses
+    
+
+  } catch (errore) {
+
+    console.error(errore)
+    return []
 
   }
 }
@@ -90,6 +111,8 @@ async function getAllActress(): Promise<Actress | null> {
 (async () => {
   const lista = await getAllActress()
   const risposta = await getActress(1)
+  const attrici = await getActresses([2, 4, 8])
   console.log(lista)
   console.log(risposta)
+  console.log(attrici)
 })()
